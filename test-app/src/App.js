@@ -9,7 +9,12 @@ import {
   Container,
 } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
-import customTheme from "./styles/customTheme";
+import customButtonTheme from "./styles/customButtonTheme";
+import customTextFieldTheme from "./styles/customTextFieldTheme";
+import customContainerTheme from "./styles/customContainerTheme";
+import customListItemTheme from "./styles/customListItemTheme";
+import customListButtonTheme from "./styles/customListButtonTheme";
+import customListTypographyTheme from "./styles/customListTypographyTheme";
 
 function App() {
   const [inputVal, setInputVal] = useState("");
@@ -46,6 +51,7 @@ function App() {
       }
       return todo;
     });
+    updated.sort((a, b) => a.isDone - b.isDone);
     setTodos(updated);
   };
 
@@ -59,52 +65,62 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={customTheme}>
+    <ThemeProvider theme={customContainerTheme}>
       <Container component="main">
-        <TextField
-          variant="outlined"
-          onChange={onChange}
-          label="type your task"
-          value={inputVal}
-        />
-        <Button
-          size="large"
-          variant={isEdited ? "outlined" : "contained"}
-          color="primary"
-          onClick={handleClick}
-          disabled={inputVal ? false : true}
-        >
-          {isEdited ? "Edit Task" : "Add Task"}
-        </Button>
+        <ThemeProvider theme={customTextFieldTheme}>
+          <TextField
+            variant="outlined"
+            onChange={onChange}
+            label="type your task"
+            value={inputVal}
+          />
+        </ThemeProvider>
+        <ThemeProvider theme={customButtonTheme}>
+          <Button
+            size="large"
+            variant={isEdited ? "outlined" : "contained"}
+            color="primary"
+            onClick={handleClick}
+            disabled={inputVal ? false : true}
+          >
+            {isEdited ? "Edit Task" : "Add Task"}
+          </Button>
+        </ThemeProvider>
         <List>
           {todos.map((todo) => {
             return (
               <>
-                <ListItem divider="bool">
-                  <Checkbox
-                    onClick={() => handleDone(todo.id)}
-                    checked={todo.isDone}
-                  />
-                  <Typography
-                    style={{ color: todo.isDone ? "green" : "" }}
-                    key={todo.id}
-                  >
-                    {todo.val}
-                  </Typography>
-                  <Button
-                    onClick={() => handleEdit(todo.id)}
-                    variant="contained"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => onDelete(todo.id)}
-                    color="secondary"
-                    variant="contained"
-                  >
-                    delete
-                  </Button>
-                </ListItem>
+                <ThemeProvider theme={customListItemTheme}>
+                  <ListItem divider="ture">
+                    <Checkbox
+                      onClick={() => {
+                        handleDone(todo.id);
+                      }}
+                      checked={todo.isDone}
+                    />
+                    <ThemeProvider theme={customListTypographyTheme}>
+                      <Typography style={{ color: todo.isDone ? "green" : "" }}>
+                        {todo.val}
+                      </Typography>
+                    </ThemeProvider>
+                    <ThemeProvider theme={customListButtonTheme}>
+                      <Button
+                        onClick={() => handleEdit(todo.id)}
+                        variant="contained"
+                        color="info"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => onDelete(todo.id)}
+                        color="error"
+                        variant="contained"
+                      >
+                        delete
+                      </Button>
+                    </ThemeProvider>
+                  </ListItem>
+                </ThemeProvider>
               </>
             );
           })}
