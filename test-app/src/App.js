@@ -1,5 +1,11 @@
+import ProgressMobileStepper from "./components/stepper";
+
 function App() {
-  return "hello world!";
+  return (
+    <div>
+      <ProgressMobileStepper></ProgressMobileStepper>
+    </div>
+  );
 }
 
 export default App;
