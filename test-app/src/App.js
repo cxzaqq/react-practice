@@ -1,102 +1,116 @@
-import * as React from "react";
-import MobileStepper from "@mui/material/MobileStepper";
+import { useState } from "react";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import "dayjs/locale/ko";
+import { MonthCalendar, YearCalendar } from "@mui/x-date-pickers";
+import Popover from "@mui/material/Popover";
 import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
+import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
+import EventIcon from "@mui/icons-material/Event";
+import dayjs from "dayjs";
+import { Tooltip, Typography } from "@mui/material";
 
 function App() {
-  const totalStep = 10;
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [paperSize, setPaperSize] = React.useState({ width: 300, height: 450 });
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [view, setView] = useState("month"); // month 또는 year로 상태 설정
+  const [selectedDate, setSelectedDate] = useState(dayjs());
 
-  // 화면 크기가 변경될 때마다 Paper의 크기를 조절
-  React.useEffect(() => {
-    const handleResize = () => {
-      const width = window.innerWidth * 0.8; // 화면 너비의 80%로 설정
-      const height = window.innerHeight * 0.7; // 화면 높이의 70%로 설정
-      setPaperSize({ width, height });
-    };
-    handleResize(); // 처음 렌더링 시 크기 설정
-    window.addEventListener("resize", handleResize); // 리사이즈 이벤트 핸들러 등록
-    return () => window.removeEventListener("resize", handleResize); // 컴포넌트 언마운트 시 이벤트 핸들러 제거
-  }, []);
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => {
-      if (prevActiveStep < totalStep - 1) return prevActiveStep + 1;
-      else return totalStep - 1;
-    });
+  const PopoverClick = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => {
-      if (prevActiveStep > 0) return prevActiveStep - 1;
-      else return 0;
-    });
+  const dateClearClick = () => {
+    setSelectedDate(undefined);
   };
+
+  const getCurrentDateClick = () => {
+    setSelectedDate(dayjs());
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleViewChange = (view) => {
+    setView(view);
+  };
+
+  const handleYearChange = (year) => {
+    setSelectedDate(selectedDate.year(year));
+  };
+
+  const handleMonthChange = (month) => {
+    setSelectedDate(selectedDate.month(month));
+  };
+
+  const handleSelect = () => {
+    console.log("선택된 년도:", selectedDate.year());
+    console.log("선택된 월:", selectedDate.month() + 1); // month() 함수는 0부터 시작하므로 1을 더함.
+    handleClose();
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "simple-popover" : undefined;
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        height: "96vh",
-        justifyContent: "space-between",
-        mt: 1,
-      }}
-    >
-      <Box sx={{ mt: 2 }}>
-        <MobileStepper
-          variant="dots"
-          steps={totalStep}
-          position="static"
-          activeStep={activeStep}
-          sx={{ maxWidth: 400, margin: "auto" }}
-        />
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          width: "60vw", // 화면의 80%를 차지하도록 설정
-          height: "70vh", // 화면의 70%를 차지하도록 설정
-          "@media (max-width: 600px)": {
-            width: "90vw", // 모바일 화면에서는 너비를 좀 더 넓게 설정
-          },
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <Typography>
+        {selectedDate
+          ? `${selectedDate.year()}년 ${selectedDate.month() + 1}월`
+          : "전체 검색"}
+      </Typography>
+      <Tooltip title="년, 월 선택">
+        <EventAvailableIcon onClick={PopoverClick} />
+      </Tooltip>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
         }}
       >
-        <Paper elevation={3} sx={{ borderRadius: 8, ...paperSize }} />
-      </Box>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          position: "static",
-        }}
-      >
-        {activeStep !== 0 && (
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleBack}
-            sx={{ mr: 1 }}
-          >
-            이전
-          </Button>
-        )}
-        {activeStep !== totalStep - 1 && (
-          <Button variant="contained" size="large" onClick={handleNext}>
-            다음
-          </Button>
-        )}
-        {activeStep === totalStep - 1 && (
-          <Button variant="contained" size="large" onClick={handleNext}>
-            제출
-          </Button>
-        )}
-      </Box>
-    </Box>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Button onClick={() => handleViewChange("year")}>년</Button>
+          <Button onClick={() => handleViewChange("month")}>월</Button>
+          <div style={{ flex: 1 }}></div>
+          <Button onClick={handleSelect}>선택</Button>{" "}
+        </div>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ko">
+          {view === "month" && (
+            <MonthCalendar
+              value={selectedDate ? selectedDate : null}
+              onChange={(newDate) => handleMonthChange(newDate.month())}
+            />
+          )}
+          {view === "year" && (
+            <YearCalendar
+              value={selectedDate ? selectedDate : null}
+              onChange={(newDate) => handleYearChange(newDate.year())}
+            />
+          )}
+        </LocalizationProvider>
+      </Popover>
+      <Tooltip title="날짜 전체 검색">
+        <EventBusyIcon fontSize="medium" onClick={dateClearClick} />
+      </Tooltip>
+      <Tooltip title="현재 년, 월 선택">
+        <EventIcon onClick={getCurrentDateClick} />
+      </Tooltip>
+    </div>
   );
 }
 
